@@ -40,7 +40,7 @@ body::before {
 #game-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(10px,2.5vw,13px); letter-spacing:.5em; color:var(--gold); text-shadow:0 0 20px rgba(201,168,76,.5); }
 #diff-badge { font-size:clamp(6px,1.5vw,8px); letter-spacing:.2em; color:var(--text-dim); margin-top:2px; text-transform:uppercase; }
 
-/* TIMER DISPLAY (top-center of canvas during time mode) */
+/* TIMER */
 #timer-display {
   position:absolute; top:10px; left:50%; transform:translateX(-50%);
   font-family:'Bebas Neue',sans-serif; font-size:clamp(18px,4vw,26px);
@@ -49,7 +49,15 @@ body::before {
 }
 #timer-display.visible { display:block; }
 #timer-display.urgent { color:#ff4444; text-shadow:0 0 20px rgba(255,68,68,.8); animation:pulse .5s infinite alternate; }
-@keyframes pulse { from { opacity:1; } to { opacity:.4; } }
+@keyframes pulse { from{opacity:1;} to{opacity:.4;} }
+
+/* 2P LABELS on canvas */
+#p2-hint {
+  position:absolute; top:10px; left:12px; z-index:4; pointer-events:none;
+  font-size:8px; letter-spacing:.2em; color:rgba(76,201,240,.35);
+  text-transform:uppercase; display:none;
+}
+#p2-hint.visible { display:block; }
 
 /* CANVAS */
 #canvas-wrap {
@@ -61,7 +69,7 @@ body::before {
   content:''; position:absolute; top:0; bottom:0; width:1px; z-index:2; pointer-events:none;
   background:linear-gradient(180deg,transparent,rgba(201,168,76,.2) 30%,rgba(201,168,76,.2) 70%,transparent);
 }
-#canvas-wrap::before { left:0; } #canvas-wrap::after { right:0; }
+#canvas-wrap::before{left:0;} #canvas-wrap::after{right:0;}
 canvas { display:block; width:100%; height:100%; }
 
 #quit-btn {
@@ -79,9 +87,8 @@ canvas { display:block; width:100%; height:100%; }
   position:absolute; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   background:rgba(8,8,8,.93); backdrop-filter:blur(8px);
-  z-index:10; gap:12px; padding:16px;
+  z-index:10; gap:12px; padding:16px; overflow-y:auto;
   transition:opacity .35s,transform .35s;
-  overflow-y:auto;
 }
 .screen.hidden { opacity:0; pointer-events:none; transform:scale(.97); }
 .screen-title {
@@ -89,7 +96,7 @@ canvas { display:block; width:100%; height:100%; }
   letter-spacing:.15em; color:var(--gold-light);
   text-shadow:0 0 40px rgba(201,168,76,.7); text-align:center; flex-shrink:0;
 }
-.screen-sub { font-size:clamp(8px,2vw,10px); letter-spacing:.2em; color:var(--text-dim); text-transform:uppercase; text-align:center; line-height:2; }
+.screen-sub { font-size:clamp(8px,2vw,10px); letter-spacing:.2em; color:var(--text-dim); text-transform:uppercase; text-align:center; line-height:2; flex-shrink:0; }
 
 /* BUTTONS */
 .btn {
@@ -100,60 +107,52 @@ canvas { display:block; width:100%; height:100%; }
   -webkit-tap-highlight-color:transparent; white-space:nowrap; flex-shrink:0;
 }
 .btn::before { content:''; position:absolute; inset:0; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .22s; z-index:-1; }
-.btn:hover { color:var(--bg); } .btn:hover::before { transform:scaleX(1); }
-.btn:active { background:var(--gold); color:var(--bg); }
+.btn:hover{color:var(--bg);} .btn:hover::before{transform:scaleX(1);}
+.btn:active{background:var(--gold);color:var(--bg);}
 .btn.secondary { border-color:rgba(201,168,76,.3); color:var(--text-dim); font-size:9px; padding:9px 28px; }
-.btn.secondary:hover { color:var(--bg); border-color:var(--gold); }
+.btn.secondary:hover{color:var(--bg);border-color:var(--gold);}
 
-/* PICKER SECTIONS */
+/* PICKERS */
 .pick-section { width:100%; max-width:420px; flex-shrink:0; }
 .pick-label { font-size:8px; letter-spacing:.3em; color:var(--text-dim); text-transform:uppercase; margin-bottom:7px; text-align:center; }
 .pick-row { display:flex; gap:7px; justify-content:center; flex-wrap:wrap; }
 
-/* MODE TABS */
-.mode-tab {
-  padding:8px 20px; border:1px solid rgba(201,168,76,.2); border-radius:2px;
-  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.2em; text-transform:uppercase;
-  cursor:pointer; color:var(--text-dim); transition:all .2s; -webkit-tap-highlight-color:transparent;
-}
-.mode-tab:hover { border-color:var(--gold); color:var(--gold); }
-.mode-tab.active { border-color:var(--gold); color:var(--bg); background:var(--gold); }
-
-/* MODE SUB-OPTIONS */
-.mode-opts { display:none; flex-direction:column; align-items:center; gap:7px; width:100%; }
-.mode-opts.visible { display:flex; }
-.opt-row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
-
-.opt-pill {
-  padding:6px 14px; border:1px solid rgba(201,168,76,.18); border-radius:2px;
-  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.15em;
-  cursor:pointer; color:var(--text-dim); transition:all .2s; -webkit-tap-highlight-color:transparent;
-}
-.opt-pill:hover { border-color:var(--gold); color:var(--gold); }
-.opt-pill.active { border-color:var(--p1); color:var(--p1); background:rgba(76,201,240,.12); }
-
-/* DIFF PILLS */
-.diff-pill {
+.players-tab, .mode-tab, .diff-pill, .opt-pill {
   padding:7px 16px; border:1px solid rgba(201,168,76,.2); border-radius:2px;
   font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.2em; text-transform:uppercase;
   cursor:pointer; color:var(--text-dim); transition:all .2s; -webkit-tap-highlight-color:transparent;
 }
-.diff-pill:hover { border-color:var(--gold); color:var(--gold); }
-.diff-pill.active { border-color:var(--gold); color:var(--bg); background:var(--gold); }
+.players-tab:hover,.mode-tab:hover,.diff-pill:hover,.opt-pill:hover { border-color:var(--gold); color:var(--gold); }
+.players-tab.active,.mode-tab.active,.diff-pill.active { border-color:var(--gold); color:var(--bg); background:var(--gold); }
+.opt-pill.active { border-color:var(--p1); color:var(--p1); background:rgba(76,201,240,.12); }
 
-/* BALL + COLOR */
+.mode-opts { display:none; flex-direction:column; align-items:center; gap:7px; width:100%; max-width:420px; flex-shrink:0; }
+.mode-opts.visible { display:flex; }
+.opt-row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+
+/* diff hidden in 2p */
+#diff-section { transition:opacity .2s; }
+#diff-section.hidden-soft { opacity:.2; pointer-events:none; }
+
 .ball-swatch {
   width:34px; height:34px; border-radius:50%; cursor:pointer; border:2px solid transparent;
   transition:all .2s; -webkit-tap-highlight-color:transparent;
 }
-.ball-swatch:hover { transform:scale(1.15); }
-.ball-swatch.active { border-color:#fff; box-shadow:0 0 12px rgba(255,255,255,.6); }
+.ball-swatch:hover{transform:scale(1.15);}
+.ball-swatch.active{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,.6);}
 .color-dot {
   width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent;
   transition:all .2s; -webkit-tap-highlight-color:transparent;
 }
-.color-dot:hover { transform:scale(1.2); }
-.color-dot.active { border-color:#fff; box-shadow:0 0 10px rgba(255,255,255,.5); }
+.color-dot:hover{transform:scale(1.2);}
+.color-dot.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.5);}
+
+/* 2p colour pickers side by side */
+.two-col { display:flex; gap:20px; justify-content:center; align-items:flex-start; width:100%; max-width:420px; flex-shrink:0; }
+.two-col-block { flex:1; }
+.two-col-block .pick-label { font-size:7px; }
+#p2-color-section { display:none; }
+#p2-color-section.visible { display:block; }
 
 /* SPEED BAR */
 #speed-bar-wrap { width:100%; max-width:700px; display:flex; align-items:center; gap:10px; }
@@ -162,18 +161,19 @@ canvas { display:block; width:100%; height:100%; }
 #speed-fill { height:100%; width:20%; background:linear-gradient(90deg,var(--p1),var(--gold),var(--p2)); border-radius:1px; transition:width .3s; }
 
 /* FOOTER */
-#footer { display:flex; gap:18px; font-size:8px; letter-spacing:.15em; color:var(--text-dim); text-transform:uppercase; flex-wrap:wrap; justify-content:center; }
+#footer { display:flex; gap:14px; font-size:8px; letter-spacing:.12em; color:var(--text-dim); text-transform:uppercase; flex-wrap:wrap; justify-content:center; }
 #footer span { display:flex; align-items:center; gap:4px; }
 .key { padding:2px 6px; border:1px solid rgba(201,168,76,.2); border-radius:2px; color:var(--gold-dim); font-size:8px; }
+#footer-2p { display:none; }
+#footer-2p.visible { display:flex; gap:14px; }
 </style>
 </head>
 <body>
 <div id="wrapper">
 
-  <!-- HEADER -->
   <div id="header">
     <div class="player-card">
-      <div class="player-label p1">PLAYER</div>
+      <div class="player-label p1" id="label-p1">PLAYER</div>
       <div class="score p1" id="score-p1">0</div>
     </div>
     <div id="title-block">
@@ -181,15 +181,15 @@ canvas { display:block; width:100%; height:100%; }
       <div id="diff-badge">FIRST TO 7</div>
     </div>
     <div class="player-card">
-      <div class="player-label p2">CPU</div>
+      <div class="player-label p2" id="label-p2">CPU</div>
       <div class="score p2" id="score-p2">0</div>
     </div>
   </div>
 
-  <!-- CANVAS -->
   <div id="canvas-wrap">
     <canvas id="c"></canvas>
     <div id="timer-display">2:00</div>
+    <div id="p2-hint">P1: W/S</div>
     <button id="quit-btn">✕ QUIT</button>
 
     <!-- MAIN MENU -->
@@ -204,6 +204,15 @@ canvas { display:block; width:100%; height:100%; }
     <div class="screen hidden" id="screen-custom">
       <div class="screen-title" style="font-size:clamp(20px,6vw,32px)">CUSTOMISE</div>
 
+      <!-- PLAYERS -->
+      <div class="pick-section">
+        <div class="pick-label">Players</div>
+        <div class="pick-row">
+          <div class="players-tab active" data-players="1">1 Player</div>
+          <div class="players-tab" data-players="2">2 Players</div>
+        </div>
+      </div>
+
       <!-- GAME MODE -->
       <div class="pick-section">
         <div class="pick-label">Game Mode</div>
@@ -213,8 +222,7 @@ canvas { display:block; width:100%; height:100%; }
         </div>
       </div>
 
-      <!-- FIRST TO options -->
-      <div class="pick-section mode-opts visible" id="opts-firstto">
+      <div class="mode-opts visible" id="opts-firstto">
         <div class="pick-label" style="font-size:7px;color:#3a3028">Score target</div>
         <div class="opt-row" id="firstto-row">
           <div class="opt-pill" data-val="3">3</div>
@@ -226,8 +234,7 @@ canvas { display:block; width:100%; height:100%; }
         </div>
       </div>
 
-      <!-- TIMED options -->
-      <div class="pick-section mode-opts" id="opts-timed">
+      <div class="mode-opts" id="opts-timed">
         <div class="pick-label" style="font-size:7px;color:#3a3028">Duration</div>
         <div class="opt-row" id="timed-row">
           <div class="opt-pill" data-val="30">30s</div>
@@ -238,9 +245,9 @@ canvas { display:block; width:100%; height:100%; }
         </div>
       </div>
 
-      <!-- DIFFICULTY -->
-      <div class="pick-section">
-        <div class="pick-label">Difficulty</div>
+      <!-- DIFFICULTY (hidden in 2p) -->
+      <div class="pick-section" id="diff-section">
+        <div class="pick-label">Difficulty (vs CPU)</div>
         <div class="pick-row" id="diff-row">
           <div class="diff-pill active" data-diff="easy">Easy</div>
           <div class="diff-pill" data-diff="medium">Medium</div>
@@ -250,14 +257,20 @@ canvas { display:block; width:100%; height:100%; }
 
       <!-- BALL -->
       <div class="pick-section">
-        <div class="pick-label">Your Ball</div>
+        <div class="pick-label">Ball</div>
         <div class="pick-row" id="ball-row"></div>
       </div>
 
-      <!-- PADDLE COLOUR -->
-      <div class="pick-section">
-        <div class="pick-label">Your Paddle Colour</div>
-        <div class="pick-row" id="color-row"></div>
+      <!-- PADDLE COLOURS — single in 1p, dual in 2p -->
+      <div class="two-col">
+        <div class="two-col-block">
+          <div class="pick-label" id="p1-color-label">Your Paddle Colour</div>
+          <div class="pick-row" id="color-row"></div>
+        </div>
+        <div class="two-col-block" id="p2-color-section">
+          <div class="pick-label" style="color:var(--p2)">P2 Paddle Colour</div>
+          <div class="pick-row" id="color-row-p2"></div>
+        </div>
       </div>
 
       <button class="btn" id="btn-back">← BACK</button>
@@ -278,7 +291,7 @@ canvas { display:block; width:100%; height:100%; }
       <button class="btn secondary" id="btn-menu-over">MAIN MENU</button>
     </div>
 
-  </div><!-- /canvas-wrap -->
+  </div>
 
   <div id="speed-bar-wrap">
     <div class="bar-label">SPEED</div>
@@ -286,9 +299,15 @@ canvas { display:block; width:100%; height:100%; }
   </div>
 
   <div id="footer">
-    <span><span class="key">W</span><span class="key">S</span> Move</span>
-    <span><span class="key">ESC</span> Pause</span>
-    <span>Mobile: drag left side</span>
+    <span id="footer-1p">
+      <span class="key">W</span><span class="key">S</span> Move &nbsp;·&nbsp;
+      <span class="key">ESC</span> Pause &nbsp;·&nbsp; Mobile: drag left
+    </span>
+    <span id="footer-2p">
+      <span class="key">W</span><span class="key">S</span> P1 &nbsp;·&nbsp;
+      <span class="key">↑</span><span class="key">↓</span> P2 &nbsp;·&nbsp;
+      <span class="key">ESC</span> Pause &nbsp;·&nbsp; Mobile: each side
+    </span>
   </div>
 </div>
 
@@ -296,11 +315,11 @@ canvas { display:block; width:100%; height:100%; }
 (() => {
 'use strict';
 
-// ── CANVAS ──
 const GAME_W=700,GAME_H=420;
 const canvas=document.getElementById('c');
 const wrap=document.getElementById('canvas-wrap');
 const ctx=canvas.getContext('2d');
+
 function resize(){
   const mw=Math.min(window.innerWidth-16,GAME_W);
   wrap.style.height=(GAME_H*(mw/GAME_W))+'px';
@@ -308,7 +327,6 @@ function resize(){
 }
 resize(); window.addEventListener('resize',resize);
 
-// ── SCREENS ──
 const SC={
   menu:  document.getElementById('screen-menu'),
   custom:document.getElementById('screen-custom'),
@@ -320,7 +338,7 @@ function showScreen(n){
   if(n) SC[n].classList.remove('hidden');
 }
 
-// ── AUDIO ──
+// AUDIO
 const AudioCtx=window.AudioContext||window.webkitAudioContext;
 const audio=new AudioCtx();
 function resumeAudio(){if(audio.state==='suspended')audio.resume();}
@@ -341,7 +359,7 @@ function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.15,'
 function playTimesUp(){[330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.2,'sawtooth',.12),i*160));}
 function playCountdown(){beep(660,.12,'square',.08);}
 
-// ── CONFIG ──
+// CONFIG
 const BALLS=[
   {id:'gold',  c1:'#fff9e0',c2:'#ffe066',c3:'#c9a84c',glow:'#ffe066',trail:'#ffe066'},
   {id:'fire',  c1:'#fff0c0',c2:'#ff6a00',c3:'#c0200a',glow:'#ff4400',trail:'#ff6a00'},
@@ -363,39 +381,58 @@ const DIFFC={
   hard:  {reaction:.15,maxSpeed:6.5,wobble:.4, deadZone:4, label:'HARD'},
 };
 
-// ── CUSTOMISE STATE ──
-let chosenDiff='easy', chosenBall='gold', chosenColor='cyan';
-let chosenMode='firstto';   // 'firstto' | 'timed'
-let chosenFirstTo=7;
-let chosenTime=120;         // seconds
+// CUSTOMISE STATE
+let chosenPlayers=1;
+let chosenDiff='easy', chosenBall='gold', chosenColor='cyan', chosenColorP2='pink';
+let chosenMode='firstto', chosenFirstTo=7, chosenTime=120;
 
-// ── BUILD PICKERS ──
-const ballRow=document.getElementById('ball-row');
-const colorRow=document.getElementById('color-row');
-
-BALLS.forEach(b=>{
-  const el=document.createElement('div');
-  el.className='ball-swatch'+(b.id===chosenBall?' active':'');
-  el.style.background=`radial-gradient(circle at 35% 35%,${b.c1},${b.c2},${b.c3})`;
-  el.title=b.id;
-  el.addEventListener('click',()=>{
-    chosenBall=b.id;
-    ballRow.querySelectorAll('.ball-swatch').forEach(x=>x.classList.remove('active'));
-    el.classList.add('active');
+// BUILD PICKERS
+function buildBallRow(){
+  const row=document.getElementById('ball-row');
+  BALLS.forEach(b=>{
+    const el=document.createElement('div');
+    el.className='ball-swatch'+(b.id===chosenBall?' active':'');
+    el.style.background=`radial-gradient(circle at 35% 35%,${b.c1},${b.c2},${b.c3})`;
+    el.title=b.id;
+    el.addEventListener('click',()=>{
+      chosenBall=b.id;
+      row.querySelectorAll('.ball-swatch').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+    });
+    row.appendChild(el);
   });
-  ballRow.appendChild(el);
-});
+}
 
-PCOLS.forEach(c=>{
-  const el=document.createElement('div');
-  el.className='color-dot'+(c.id===chosenColor?' active':'');
-  el.style.background=c.hex; el.title=c.id;
-  el.addEventListener('click',()=>{
-    chosenColor=c.id;
-    colorRow.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));
-    el.classList.add('active');
+function buildColorRow(rowId, getVal, setVal){
+  const row=document.getElementById(rowId);
+  PCOLS.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='color-dot'+(c.id===getVal()?' active':'');
+    el.style.background=c.hex; el.title=c.id;
+    el.addEventListener('click',()=>{
+      setVal(c.id);
+      row.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+    });
+    row.appendChild(el);
   });
-  colorRow.appendChild(el);
+}
+
+buildBallRow();
+buildColorRow('color-row',   ()=>chosenColor,   v=>{ chosenColor=v; });
+buildColorRow('color-row-p2',()=>chosenColorP2, v=>{ chosenColorP2=v; });
+
+// players tabs
+document.querySelectorAll('.players-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    chosenPlayers=parseInt(tab.dataset.players);
+    document.querySelectorAll('.players-tab').forEach(x=>x.classList.remove('active'));
+    tab.classList.add('active');
+    const is2p=chosenPlayers===2;
+    document.getElementById('diff-section').classList.toggle('hidden-soft',is2p);
+    document.getElementById('p2-color-section').classList.toggle('visible',is2p);
+    document.getElementById('p1-color-label').textContent=is2p?'P1 Paddle Colour':'Your Paddle Colour';
+  });
 });
 
 // mode tabs
@@ -409,7 +446,6 @@ document.querySelectorAll('.mode-tab').forEach(tab=>{
   });
 });
 
-// first-to pills
 document.querySelectorAll('#firstto-row .opt-pill').forEach(pill=>{
   pill.addEventListener('click',()=>{
     chosenFirstTo=parseInt(pill.dataset.val);
@@ -417,8 +453,6 @@ document.querySelectorAll('#firstto-row .opt-pill').forEach(pill=>{
     pill.classList.add('active');
   });
 });
-
-// timed pills
 document.querySelectorAll('#timed-row .opt-pill').forEach(pill=>{
   pill.addEventListener('click',()=>{
     chosenTime=parseInt(pill.dataset.val);
@@ -426,8 +460,6 @@ document.querySelectorAll('#timed-row .opt-pill').forEach(pill=>{
     pill.classList.add('active');
   });
 });
-
-// difficulty
 document.querySelectorAll('.diff-pill').forEach(pill=>{
   pill.addEventListener('click',()=>{
     chosenDiff=pill.dataset.diff;
@@ -436,17 +468,19 @@ document.querySelectorAll('.diff-pill').forEach(pill=>{
   });
 });
 
-// ── BUTTON WIRING ──
+// BUTTON WIRING
 const quitBtn=document.getElementById('quit-btn');
 const timerDisplay=document.getElementById('timer-display');
+const p2Hint=document.getElementById('p2-hint');
 
 document.getElementById('btn-play').addEventListener('click',()=>{resumeAudio();startGame();});
 document.getElementById('btn-customize').addEventListener('click',()=>{resumeAudio();showScreen('custom');});
 document.getElementById('btn-back').addEventListener('click',()=>showScreen('menu'));
 document.getElementById('btn-resume').addEventListener('click',()=>{
-  state='playing'; showScreen(null); quitBtn.classList.add('visible');
+  state='playing';showScreen(null);quitBtn.classList.add('visible');
   if(chosenMode==='timed') timerDisplay.classList.add('visible');
-  lastTimestamp=null; // reset delta so timer doesn't jump on resume
+  if(chosenPlayers===2) p2Hint.classList.add('visible');
+  lastTimestamp=null;
 });
 document.getElementById('btn-quit-pause').addEventListener('click',()=>goToMenu());
 document.getElementById('btn-rematch').addEventListener('click',()=>{resumeAudio();startGame();});
@@ -458,51 +492,72 @@ function goToMenu(){
   quitBtn.classList.remove('visible');
   timerDisplay.classList.remove('visible');
   timerDisplay.classList.remove('urgent');
+  p2Hint.classList.remove('visible');
   document.getElementById('diff-badge').textContent='FIRST TO 7';
+  document.getElementById('label-p1').textContent='PLAYER';
+  document.getElementById('label-p2').textContent='CPU';
+  document.getElementById('footer-1p').style.display='';
+  document.getElementById('footer-2p').style.display='none';
   showScreen('menu');
 }
 
-// ── KEYBOARD ──
+// KEYBOARD
 const keys={};
 document.addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.code==='Escape'&&state==='playing'){
-    state='paused'; showScreen('pause'); quitBtn.classList.remove('visible');
+    state='paused';showScreen('pause');
+    quitBtn.classList.remove('visible');
     timerDisplay.classList.remove('visible');
+    p2Hint.classList.remove('visible');
   } else if(e.code==='Escape'&&state==='paused'){
-    state='playing'; showScreen(null); quitBtn.classList.add('visible');
+    state='playing';showScreen(null);
+    quitBtn.classList.add('visible');
     if(chosenMode==='timed') timerDisplay.classList.add('visible');
+    if(chosenPlayers===2) p2Hint.classList.add('visible');
     lastTimestamp=null;
   }
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
 
-// ── TOUCH ──
-let touchY=null;
+// TOUCH — left half = P1, right half = P2
+const touches={p1:null,p2:null};
 canvas.addEventListener('touchstart',e=>{
   e.preventDefault(); resumeAudio();
-  const t=e.touches[0],rect=canvas.getBoundingClientRect();
-  if((t.clientX-rect.left)*(GAME_W/rect.width)<GAME_W/2)
-    touchY=(t.clientY-rect.top)*(GAME_H/rect.height);
+  for(const t of e.changedTouches){
+    const rect=canvas.getBoundingClientRect();
+    const tx=(t.clientX-rect.left)*(GAME_W/rect.width);
+    const ty=(t.clientY-rect.top)*(GAME_H/rect.height);
+    if(tx<GAME_W/2) touches.p1={y:ty,id:t.identifier};
+    else            touches.p2={y:ty,id:t.identifier};
+  }
 },{passive:false});
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  const t=e.touches[0],rect=canvas.getBoundingClientRect();
-  if((t.clientX-rect.left)*(GAME_W/rect.width)<GAME_W/2)
-    touchY=(t.clientY-rect.top)*(GAME_H/rect.height);
+  for(const t of e.changedTouches){
+    const rect=canvas.getBoundingClientRect();
+    const tx=(t.clientX-rect.left)*(GAME_W/rect.width);
+    const ty=(t.clientY-rect.top)*(GAME_H/rect.height);
+    if(touches.p1&&touches.p1.id===t.identifier) touches.p1.y=ty;
+    else if(touches.p2&&touches.p2.id===t.identifier) touches.p2.y=ty;
+    else if(tx<GAME_W/2) touches.p1={y:ty,id:t.identifier};
+    else                 touches.p2={y:ty,id:t.identifier};
+  }
 },{passive:false});
-canvas.addEventListener('touchend',e=>{e.preventDefault();touchY=null;},{passive:false});
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    if(touches.p1&&touches.p1.id===t.identifier) touches.p1=null;
+    if(touches.p2&&touches.p2.id===t.identifier) touches.p2=null;
+  }
+},{passive:false});
 
-// ── GAME STATE ──
+// GAME STATE
 const PW=10,PH=80,PM=20,INIT_S=5,MAX_S=12;
-
 let state='menu';
 let scoreP1=0,scoreP2=0;
 let scoreLocked=true;
-let timeLeft=0;       // seconds remaining (timed mode)
-let lastTimestamp=null;
-let lastCountdownBeep=-1; // track last beep second
-
+let timeLeft=0,lastTimestamp=null,lastCountdownBeep=-1;
 let paddle1={x:PM,y:GAME_H/2-PH/2,w:PW,h:PH};
 let paddle2={x:GAME_W-PM-PW,y:GAME_H/2-PH/2,w:PW,h:PH};
 let ball,particles=[],trail=[],flashTimer=0;
@@ -538,23 +593,38 @@ function startGame(){
   s1El.textContent='0';s2El.textContent='0';
   paddle1.y=GAME_H/2-PH/2; paddle2.y=GAME_H/2-PH/2;
   particles=[];trail=[];lastTimestamp=null;lastCountdownBeep=-1;
+  touches.p1=null;touches.p2=null;
 
   const d=DIFFC[chosenDiff];
+  const is2p=chosenPlayers===2;
+
+  // Update labels
+  document.getElementById('label-p1').textContent=is2p?'P1':'PLAYER';
+  document.getElementById('label-p2').textContent=is2p?'P2':'CPU';
+
+  // Footer
+  document.getElementById('footer-1p').style.display=is2p?'none':'';
+  document.getElementById('footer-2p').style.display=is2p?'flex':'none';
 
   if(chosenMode==='timed'){
     timeLeft=chosenTime;
-    const mins=Math.floor(chosenTime/60), secs=chosenTime%60;
+    const mins=Math.floor(chosenTime/60),secs=chosenTime%60;
     const label=mins>0?(secs>0?mins+'m '+secs+'s':mins+' min'):(chosenTime+'s');
-    document.getElementById('diff-badge').textContent=d.label+' · '+label+' TIME ATTACK';
+    const modeLabel=is2p?'2P · ':d.label+' · ';
+    document.getElementById('diff-badge').textContent=modeLabel+label+' TIME ATTACK';
     timerDisplay.textContent=fmtTime(timeLeft);
     timerDisplay.classList.add('visible');
     timerDisplay.classList.remove('urgent');
   } else {
     timeLeft=Infinity;
-    document.getElementById('diff-badge').textContent=d.label+' · FIRST TO '+chosenFirstTo;
+    const modeLabel=is2p?'2P · ':d.label+' · ';
+    document.getElementById('diff-badge').textContent=modeLabel+'FIRST TO '+chosenFirstTo;
     timerDisplay.classList.remove('visible');
     timerDisplay.classList.remove('urgent');
   }
+
+  if(is2p) p2Hint.classList.add('visible');
+  else p2Hint.classList.remove('visible');
 
   resetBall();
   state='playing';
@@ -569,62 +639,58 @@ function endGame(winner){
   quitBtn.classList.remove('visible');
   timerDisplay.classList.remove('visible');
   timerDisplay.classList.remove('urgent');
+  p2Hint.classList.remove('visible');
+  const is2p=chosenPlayers===2;
 
-  if(winner==='tie'){
-    playTimesUp();
-  } else {
-    playWin();
-  }
+  winner==='tie'?playTimesUp():playWin();
 
   setTimeout(()=>{
     let title,sub;
-    if(winner==='tie'){
-      title='DRAW'; sub='All square — neither side blinked';
-    } else if(winner===1){
-      title='VICTORY'; sub='✦ You dominated the table ✦';
-    } else {
-      title='DEFEAT'; sub='The machine was superior';
-    }
+    if(winner==='tie'){title='DRAW';sub='All square — dead even';}
+    else if(winner===1){title=is2p?'P1 WINS':'VICTORY';sub=is2p?'Player 1 takes it!':'✦ You dominated the table ✦';}
+    else{title=is2p?'P2 WINS':'DEFEAT';sub=is2p?'Player 2 takes it!':'The machine was superior';}
     document.getElementById('over-title').textContent=title;
     document.getElementById('over-sub').textContent=sub;
     showScreen('over');
   },500);
 }
 
-// ── UPDATE ──
+// UPDATE
 function update(dt){
   if(state!=='playing') return;
   const d=DIFFC[chosenDiff];
+  const is2p=chosenPlayers===2;
 
-  // timed mode countdown
+  // timed
   if(chosenMode==='timed'){
     timeLeft-=dt;
     timerDisplay.textContent=fmtTime(timeLeft);
-    // urgent flash in last 10s
-    const urgent=timeLeft<=10;
-    timerDisplay.classList.toggle('urgent',urgent);
-    // countdown beeps at 5,4,3,2,1
+    timerDisplay.classList.toggle('urgent',timeLeft<=10);
     const beepAt=Math.ceil(timeLeft);
-    if(beepAt<=5 && beepAt>=1 && beepAt!==lastCountdownBeep){
-      lastCountdownBeep=beepAt; playCountdown();
-    }
+    if(beepAt<=5&&beepAt>=1&&beepAt!==lastCountdownBeep){lastCountdownBeep=beepAt;playCountdown();}
     if(timeLeft<=0){
-      // times up — whoever has more wins, or draw
-      const winner = scoreP1>scoreP2?1 : scoreP2>scoreP1?2 : 'tie';
-      endGame(winner); return;
+      const w=scoreP1>scoreP2?1:scoreP2>scoreP1?2:'tie';
+      endGame(w);return;
     }
   }
 
-  // player
-  if(keys['KeyW']||keys['ArrowUp'])   paddle1.y-=7;
-  if(keys['KeyS']||keys['ArrowDown']) paddle1.y+=7;
-  if(touchY!==null) paddle1.y+=(touchY-PH/2-paddle1.y)*.3;
+  // P1 — keyboard W/S + touch left
+  if(keys['KeyW']) paddle1.y-=7;
+  if(keys['KeyS']) paddle1.y+=7;
+  if(touches.p1) paddle1.y+=(touches.p1.y-PH/2-paddle1.y)*.3;
   paddle1.y=Math.max(0,Math.min(GAME_H-PH,paddle1.y));
 
-  // AI
-  const ad=(ball.y-PH/2)-paddle2.y;
-  if(Math.abs(ad)>d.deadZone){
-    paddle2.y+=Math.sign(ad)*Math.min(Math.abs(ad)*d.reaction,d.maxSpeed)+(Math.random()-.5)*d.wobble;
+  // P2 — AI or human (↑↓ + touch right)
+  if(is2p){
+    if(keys['ArrowUp'])   paddle2.y-=7;
+    if(keys['ArrowDown']) paddle2.y+=7;
+    if(touches.p2) paddle2.y+=(touches.p2.y-PH/2-paddle2.y)*.3;
+  } else {
+    // AI
+    const ad=(ball.y-PH/2)-paddle2.y;
+    if(Math.abs(ad)>d.deadZone){
+      paddle2.y+=Math.sign(ad)*Math.min(Math.abs(ad)*d.reaction,d.maxSpeed)+(Math.random()-.5)*d.wobble;
+    }
   }
   paddle2.y=Math.max(0,Math.min(GAME_H-PH,paddle2.y));
 
@@ -651,7 +717,8 @@ function update(dt){
     const hp=(ball.y-paddle2.y)/PH-.5,a=Math.PI-hp*(Math.PI/3);
     ball.speed=Math.min(ball.speed+.28,MAX_S);
     ball.vx=Math.cos(a)*ball.speed;ball.vy=Math.sin(a)*ball.speed;
-    spawnP(ball.x,ball.y,'#f72585',16);playHit('p2');flashTimer=5;
+    const p2c=PCOLS.find(c=>c.id===chosenColorP2)||PCOLS[1];
+    spawnP(ball.x,ball.y,p2c.hex,16);playHit('p2');flashTimer=5;
   }
 
   if(!scoreLocked){
@@ -675,7 +742,7 @@ function update(dt){
   if(flashTimer>0) flashTimer--;
 }
 
-// ── DRAW ──
+// DRAW
 function draw(){
   const W=GAME_W,H=GAME_H;
   ctx.fillStyle='#080808';ctx.fillRect(0,0,W,H);
@@ -710,9 +777,10 @@ function draw(){
     ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();
   }
 
-  const pc=PCOLS.find(c=>c.id===chosenColor)||PCOLS[0];
-  drawPaddle(paddle1,pc.hex,pc.hi);
-  drawPaddle(paddle2,'#f72585','#ff7bb5');
+  const pc1=PCOLS.find(c=>c.id===chosenColor)||PCOLS[0];
+  const pc2=PCOLS.find(c=>c.id===chosenColorP2)||PCOLS[1];
+  drawPaddle(paddle1,pc1.hex,pc1.hi);
+  drawPaddle(paddle2,pc2.hex,pc2.hi);
 }
 
 function drawPaddle(p,col,hi){
@@ -737,12 +805,10 @@ function rr(x,y,w,h,r){
   ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
 }
 
-// ── LOOP (delta-time so timer is real-seconds accurate) ──
 function loop(ts){
-  const dt = lastTimestamp!==null ? Math.min((ts-lastTimestamp)/1000,.05) : 0;
+  const dt=lastTimestamp!==null?Math.min((ts-lastTimestamp)/1000,.05):0;
   lastTimestamp=ts;
-  update(dt);
-  draw();
+  update(dt);draw();
   requestAnimationFrame(loop);
 }
 resetBall();
